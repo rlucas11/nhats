@@ -246,3 +246,26 @@ gcb_fit <- sem(gcb_model, data=dataSelect)
 summary(gcb_fit)
 standardizedSolution(gcb_fit)
 fitMeasures(gcb_fit)
+
+
+## Plot Trajectory
+
+## Create dataframe with predicted values
+## Pull out coefficients from model fit object using "coef()"
+coefs <- c(0,coef(gc_fit_un)[1:9], 1)
+
+## Create predicted values by multiplying coefficients by slope intercept
+predicted <- coefs * coef(gc_fit_un)[25]
+
+## Create dataframe for plot data
+plotData <- data.frame(matrix(c(1:11, predicted), nrow = 11, ncol = 2))
+names(plotData) <- c("x", "y")
+
+## Check data
+plotData
+
+## Use ggplot2 to plot
+testPlot <- ggplot(data = plotData, aes(x = x, y = y)) +
+    geom_line()
+
+testPlot
