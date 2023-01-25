@@ -7,7 +7,13 @@ library(lavaan)
 ################################################################################
 ## Read Data
 ################################################################################
-data <- read_csv("data/nhatsCleaned.csv")
+data <- read_csv("data/nhatsCleaned_new.csv")
+
+################################################################################
+## Read script for generating model
+################################################################################
+
+source("~/Projects/code-generator/buildModel.R")
 
 ################################################################################
 ## Growth Model
@@ -228,7 +234,6 @@ v2W8 ~~ v2W8
 v2W9 ~~ v2W9
 v2W10 ~~ v2W10
 v2W11 ~~ v2W11
-
 '
 
 #### Positive Emotion and Health
@@ -269,3 +274,253 @@ testPlot <- ggplot(data = plotData, aes(x = x, y = y)) +
     geom_line()
 
 testPlot
+
+
+################################################################################
+## CLPM
+################################################################################
+
+## Get Data
+dataSelect <- data %>%
+  select(starts_with("PositiveEmotion"),
+         starts_with("health"))
+names(dataSelect) <- c(paste0("x", 1:11),
+                       paste0("y", 1:11))
+
+clpm11_c <- '
+## Regressions
+##
+## Wave 2
+x2 ~ a*x1
+y2 ~ b*y1
+x2 ~ c*y1
+y2 ~ d*x1
+## Wave 3
+x3 ~ a*x2
+y3 ~ b*y2
+x3 ~ c*y2
+y3 ~ d*x2
+## Wave 4
+x4 ~ a*x3
+y4 ~ b*y3
+x4 ~ c*y3
+y4 ~ d*x3
+## Wave 5
+x5 ~ a*x4
+y5 ~ b*y4
+x5 ~ c*y4
+y5 ~ d*x4
+## Wave 6
+x6 ~ a*x5
+y6 ~ b*y5
+x6 ~ c*y5
+y6 ~ d*x5
+## Wave 7
+x7 ~ a*x6
+y7 ~ b*y6
+x7 ~ c*y6
+y7 ~ d*x6
+## Wave 8
+x8 ~ a*x7
+y8 ~ b*y7
+x8 ~ c*y7
+y8 ~ d*x7
+## Wave 9
+x9 ~ a*x8
+y9 ~ b*y8
+x9 ~ c*y8
+y9 ~ d*x8
+## Wave 10
+x10 ~ a*x9
+y10 ~ b*y9
+x10 ~ c*y9
+y10 ~ d*x9
+## Wave 11
+x11 ~ a*x10
+y11 ~ b*y10
+x11 ~ c*y10
+y11 ~ d*x10
+##
+## Variances
+x1 ~~ x1
+y1 ~~ y1
+x2 ~~ x2
+y2 ~~ y2
+x3 ~~ x3
+y3 ~~ y3
+x4 ~~ x4
+y4 ~~ y4
+x5 ~~ x5
+y5 ~~ y5
+x6 ~~ x6
+y6 ~~ y6
+x7 ~~ x7
+y7 ~~ y7
+x8 ~~ x8
+y8 ~~ y8
+x9 ~~ x9
+y9 ~~ y9
+x10 ~~ x10
+y10 ~~ y10
+x11 ~~ x11
+y11 ~~ y11
+##
+## Covariances
+x1 ~~ y1
+x2 ~~ y2
+x3 ~~ y3
+x4 ~~ y4
+x5 ~~ y5
+x6 ~~ y6
+x7 ~~ y7
+x8 ~~ y8
+x9 ~~ y9
+x10 ~~ y10
+x11 ~~ y11
+'
+
+clpm_fit <- sem(clpm11_c, data=dataSelect, estimator = "MLR", missing = "fiml")
+summary(clpm_fit)
+
+standardizedSolution(clpm_fit)
+fitMeasures(clpm_fit)
+
+
+################################################################################
+## RI-CLPM
+################################################################################
+
+ri_clpm11_c <- '
+## Random Intercepts
+##
+ri_x =~ 1*x1 + 1*x2 + 1*x3 + 1*x4 + 1*x5 + 1*x6 + 1*x7 + 1*x8 + 1*x9 + 1*x10 + 1*x11
+ri_y =~ 1*y1 + 1*y2 + 1*y3 + 1*y4 + 1*y5 + 1*y6 + 1*y7 + 1*y8 + 1*y9 + 1*y10 + 1*y11
+##
+## Create within-person centered variables
+  wx1 =~ 1*x1
+  wx2 =~ 1*x2
+  wx3 =~ 1*x3 
+  wx4 =~ 1*x4
+  wx5 =~ 1*x5
+  wx6 =~ 1*x6
+  wx7 =~ 1*x7
+  wx8 =~ 1*x8 
+  wx9 =~ 1*x9
+  wx10 =~ 1*x10
+  wx11 =~ 1*x11
+  wy1 =~ 1*y1
+  wy2 =~ 1*y2
+  wy3 =~ 1*y3
+  wy4 =~ 1*y4
+  wy5 =~ 1*y5
+  wy6 =~ 1*y6
+  wy7 =~ 1*y7
+  wy8 =~ 1*y8
+  wy9 =~ 1*y9
+  wy10 =~ 1*y10
+  wy11 =~ 1*y11
+##
+## Regressions
+##
+## Stabilities #the straight AR arrow
+wx2 ~ a*wx1
+wx3 ~ a*wx2
+wx4 ~ a*wx3
+wx5 ~ a*wx4
+wx6 ~ a*wx5
+wx7 ~ a*wx6
+wx8 ~ a*wx7
+wx9 ~ a*wx8
+wx10 ~ a*wx9
+wx11 ~ a*wx10
+wy2 ~ b*wy1
+wy3 ~ b*wy2
+wy4 ~ b*wy3
+wy5 ~ b*wy4
+wy6 ~ b*wy5
+wy7 ~ b*wy6
+wy8 ~ b*wy7
+wy9 ~ b*wy8
+wy10 ~ b*wy9
+wy11 ~ b*wy10
+##
+##
+## Cross-lags #the diagonal AR arrow
+wy2 ~ c*wx1
+wy3 ~ c*wx2
+wy4 ~ c*wx3
+wy5 ~ c*wx4
+wy6 ~ c*wx5
+wy7 ~ c*wx6
+wy8 ~ c*wx7
+wy9 ~ c*wx8
+wy10 ~ c*wx9
+wy11 ~ c*wx10
+wx2 ~ d*wy1
+wx3 ~ d*wy2
+wx4 ~ d*wy3
+wx5 ~ d*wy4
+wx6 ~ d*wy5
+wx7 ~ d*wy6
+wx8 ~ d*wy7
+wx9 ~ d*wy8
+wx10 ~ d*wy9
+wx11 ~ d*wy10
+##
+## Variances
+ri_x ~~ ri_x
+ri_y ~~ ri_y
+wx1 ~~ wx1
+wy1 ~~ wy1
+wx2 ~~ wx2
+wy2 ~~ wy2
+wx3 ~~ wx3
+wy3 ~~ wy3
+wx4 ~~ wx4
+wy4 ~~ wy4
+wx5 ~~ wx5
+wy5 ~~ wy5
+wx6 ~~ wx6
+wy6 ~~ wy6
+wx7 ~~ wx7
+wy7 ~~ wy7
+wx8 ~~ wx8
+wy8 ~~ wy8
+wx9 ~~ wx9
+wy9 ~~ wy9
+wx10 ~~ wx10
+wy10 ~~ wy10
+wx11 ~~ wx11
+wy11 ~~ wy11
+##
+## Covariances
+ri_x ~~ ri_y
+wx1 ~~ wy1
+wx2 ~~ wy2
+wx3 ~~ wy3
+wx4 ~~ wy4
+wx5 ~~ wy5
+wx6 ~~ wy6
+wx7 ~~ wy7
+wx8 ~~ wy8
+wx9 ~~ wy9
+wx10 ~~ wy10
+wx11 ~~ wy11
+'
+
+riclpmFit <- sem(ri_clpm11_c, data=dataSelect, estimator = "MLR", missing = "fiml")
+
+summary(riclpmFit)
+
+standardizedSolution(clpm_fit)
+fitMeasures(clpm_fit)
+
+
+################################################################################
+## Test Univariate STARTS
+################################################################################
+
+starts <- buildStarts1(11)
+
+starts1Fit <- lavaan(starts, dataSelect, estimator="MLR", missing="fiml")
+summary(starts1Fit)
