@@ -15,6 +15,7 @@ data <- read_csv("data/nhatsCleaned.csv")
 
 source("~/Projects/code-generator/buildModel.R")
 source("~/Projects/starts/scripts/usefulFunctions.R")
+source("~/Projects/code-generator/buildMplus.R")
 
 ################################################################################
 ## Growth Model
@@ -387,9 +388,17 @@ summary(clpm_fit)
 standardizedSolution(clpm_fit)
 fitMeasures(clpm_fit)
 
+test <- buildStarts2(11)
+testFit <- lavaan(test, data=dataSelect, estimator = "MLR", missing="fiml")
+summary(testFit)
+
 test <- buildModel(11, trait=FALSE)
 testFit <- lavaan(test, data=dataSelect, estimator = "MLR", missing="fiml")
 summary(testFit)
+
+riclpm <- buildRiclpm(11)
+riclpmFit <- lavaan(ricplm, data=dataSelect, estimator = "MLR", missing="fiml")
+summary(riclpmFit)
 
 ################################################################################
 ## RI-CLPM
@@ -647,6 +656,12 @@ fitMeasures(clpm_fit)
 
 ## Sometimes it helps to use a generic model and then rename vars each time
 dataSelect <- data %>%
+    select(starts_with("PositiveEmotion"),
+           starts_with("health"))
+
+
+
+dataSelect <- data %>%
     select(starts_with("Purpose"),
            starts_with("recall"))
 
@@ -654,11 +669,16 @@ names(dataSelect) <- c(paste0("x", 1:11),
                        paste0("y", 1:11))
 
 
+bivariate <- buildStarts2(11)
+biFit <- lavaan(bivariate, dataSelect, estimator="MLR", missing="fiml")
+summary(biFit)
+
+
 startsX <- buildStartsX(11)
 startsY <- buildStartsY(11)
 
 startsFitX <- lavaan(startsX, dataSelect, estimator="MLR", missing="fiml")
-summary(startsFit)
+summary(startsFitX)
 
 startsFitY <- lavaan(startsY, dataSelect, estimator="MLR", missing="fiml")
 summary(startsFit)
@@ -1075,3 +1095,12 @@ arx11 ~~ cor_xyr*ary11
 
 lag2Fit <- lavaan(lag2clpm, dataSelect, estimator="MLR", missing="fiml")
 summary(lag2Fit)
+
+################################################################################
+## Try with Mplus
+################################################################################
+
+run_starts_mplus(dataSelect,
+                 11,
+                 1:11)
+                 
