@@ -15,7 +15,7 @@ data <- read_csv("data/nhatsCleaned.csv")
 
 source("~/Projects/code-generator/buildModel.R")
 source("~/Projects/starts/scripts/usefulFunctions.R")
-source("~/Projects/code-generator/buildMplus.R")
+# source("~/Projects/code-generator/buildMplus.R")
 
 ################################################################################
 ## Growth Model
@@ -392,13 +392,16 @@ test <- buildStarts2(11)
 testFit <- lavaan(test, data=dataSelect, estimator = "MLR", missing="fiml")
 summary(testFit)
 
-test <- buildModel(11, trait=FALSE)
+test <- buildModel(11, trait=FALSE, stationarity=TRUE)
 testFit <- lavaan(test, data=dataSelect, estimator = "MLR", missing="fiml")
 summary(testFit)
 
 riclpm <- buildRiclpm(11)
 riclpmFit <- lavaan(ricplm, data=dataSelect, estimator = "MLR", missing="fiml")
 summary(riclpmFit)
+
+
+
 
 ################################################################################
 ## RI-CLPM
