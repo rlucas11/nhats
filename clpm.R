@@ -12,7 +12,7 @@ source("~/Projects/starts/scripts/usefulFunctions.R")
 source("~/Projects/code-generator/buildModel.R")
 
 ## Read data
-## data <- read_csv("nhatsCleaned_new.csv")
+data <- read_csv("nhatsCleaned_new.csv")
 data <- read_csv("data/nhatsCleaned.csv")
 
 
@@ -44,3 +44,28 @@ clpm <- buildClpm(11)
 clpmFit <- lavaan(clpm, data = dataSelect, estimator = "MLR", missing = "fiml")
 summary(clpmFit, fit.measures = TRUE)
 
+################################################################################
+## Mplus
+################################################################################
+
+## STARTS
+run_starts_mplus(dataSelect, 11, 1:11)
+
+
+## Get Data
+dataSelect <- data %>%
+  select(starts_with("Purpose"),
+         starts_with("health"))
+names(dataSelect) <- c(paste0("x", 1:11),
+                       paste0("y", 1:11))
+
+run_starts_mplus(dataSelect, 11, 1:11)
+
+## Get Data
+dataSelect <- data %>%
+  select(starts_with("PositiveEmotion"),
+         starts_with("Recall"))
+names(dataSelect) <- c(paste0("x", 1:11),
+                       paste0("y", 1:11))
+
+run_starts_mplus(dataSelect, 11, 1:11, title="PE_Recall")
